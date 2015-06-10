@@ -28,6 +28,11 @@
 #include <sys/wait.h>
 #endif
 
+#include <sys/wait.h>
+
+#define	WCOREFLAG	0200
+#define WCOREDUMP(x)	(_W_INT(x) & WCOREFLAG)
+
 gboolean
 _g_spawn_async_with_pipes (const gchar *working_directory,
 		gchar **argv,

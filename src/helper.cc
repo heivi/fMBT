@@ -33,6 +33,10 @@
 #include <sstream>
 #include <fstream>
 
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
 #ifndef __MINGW32__
 #include <dlfcn.h>
 #else
@@ -979,20 +983,22 @@ void sdel(std::vector<std::string*>* strvec)
 
 void gettime(struct timeval *tv)
 {
-#ifndef __MINGW32__
-  struct timespec tp;
-  clock_gettime(CLOCK_REALTIME,&tp);
+struct timespec tp;
+
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+clock_serv_t cclock;
+mach_timespec_t mts;
+host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+clock_get_time(cclock, &mts);
+mach_port_deallocate(mach_task_self(), cclock);
+tp.tv_sec = mts.tv_sec;
+tp.tv_nsec = mts.tv_nsec;
+#endif
 #ifdef TIMESPEC_TO_TIMEVAL
   TIMESPEC_TO_TIMEVAL(tv,&tp);
 #else
   tv->tv_sec=tp.tv_sec;
   tv->tv_usec=tp.tv_nsec/1000;
-#endif
-#else
-  FILETIME ft; /*time since 1 Jan 1601 in 100ns units */
-  GetSystemTimeAsFileTime( &ft );
-  tv->tv_sec = (ft.dwHighDateTime-(116444736000000000LL))/10000000LL ;
-  tv->tv_usec  = (ft.dwLowDateTime/10LL) % 1000000LL ;
 #endif
 }
 
