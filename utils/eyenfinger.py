@@ -216,7 +216,7 @@ try:
             distutils.sysconfig.get_python_lib(plat_specific=1)]
     _suffix = ".so"
     if os.name == "nt":
-        _suffix = ".dll"
+        _suffix = ".pyd"
     for _dirname in _libpath:
         try:
             eye4graphics = ctypes.CDLL(os.path.join(_dirname , "eye4graphics"+_suffix))
